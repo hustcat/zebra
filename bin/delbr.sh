@@ -4,6 +4,7 @@ HOST_IFNAME=eth1
 
 if [ $# -ne 1 ]; then
 	echo "Usage: $0 <bridge>"
+	echo "Ex:    $0 br1"
 	exit 1
 fi
 

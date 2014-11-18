@@ -31,8 +31,8 @@ IPADDR=$3
     exit 1
 }
 
-HOST_IP=`ip addr list | grep "$HOST_IFNAME" | grep inet | awk '{print $2}'`
-HOST_BRD=`ip addr list | grep "$HOST_IFNAME" | grep inet | awk '{print $4}'`
+HOST_IP=`ip addr show $HOST_IFNAME | grep inet | awk '{print $2}'`
+HOST_BRD=`ip addr show $HOST_IFNAME | grep inet | awk '{print $4}'`
 HOST_DEFAULT_GATEWAY=`ip route list | grep "default" | awk '{print $3}'`
 
 if [ -n "$DEBUG" ]; then
@@ -168,13 +168,13 @@ ln -s /proc/$NSPID/ns/net /var/run/netns/$NSPID
 [ $IFTYPE = bridge ] && [ ! -d /sys/class/net/$IFNAME ] && {
     [ $BRTYPE = linux ] && {
         (ip link add dev $IFNAME type bridge > /dev/null 2>&1) || (brctl addbr $IFNAME)
-        ip link set $IFNAME up
-        ip addr del $HOST_IP dev $HOST_IFNAME
         ip addr add $HOST_IP broadcast $HOST_BRD dev $IFNAME
+        ip link set $IFNAME up
         brctl addif $IFNAME $HOST_IFNAME
+        sleep 1
+        ip addr del $HOST_IP dev $HOST_IFNAME
         echo 'NM_CONTROLLED="no"' >> /etc/sysconfig/network-scripts/ifcfg-${HOST_IFNAME}
         route add default gw $HOST_DEFAULT_GATEWAY
-        sleep 2
     }
 }
 
